@@ -1,11 +1,16 @@
 const express = require('express');
+const cors = require('cors');
 const fs = require('fs');
 const csv = require('csv-parser');
 const axios = require('axios');
 const app = express();
-const port = 3000;
+const port = 5000;
+
+app.use(express.json());
+app.use(cors());
 
 const results = [];
+let count = 0;
 
 fs.createReadStream('sample.csv')
     .pipe(csv())
@@ -23,14 +28,37 @@ fs.createReadStream('sample.csv')
     });
 
 async function sendRow(arr) {
-    return await axios.post('https://reqres.in/api/users/', {
-            ...arr,
-        })
+    const res = await axios.post('https://reqres.in/api/users/', {
+        ...arr,
+    })
+    if (res.status !== 201) {
+        return null;
+    }
+    return res.data;
 }
 
-app.get('/', async (req, res) => {
-    for (var i=0;i<results.length;i++) {
-        res.send(await sendRow(results[i]));
+app.post('/getCount', async (req, res) => {
+    res.json({length: results.length});
+});
+
+app.post('/getRow', async (req, res) => {
+    if (count>=results.length) {
+        res.status(404);
+        return;
+    }
+    const data = await sendRow(results[count]);
+    if (!res.headersSent) {
+        res.json(data)
+    }
+    count++;
+});
+
+app.post('/getRow/:index', async (req, res) => {
+    const index = req.params.index;
+    
+    const data = await sendRow(results[index]);
+    if (!res.headersSent) {
+        res.json(data)
     }
 });
 

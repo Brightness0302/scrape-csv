@@ -20,7 +20,7 @@ fs.createReadStream('sample.csv')
             arr.push(data[x]);
         }
         if (!arr.includes("")) {
-            results.push({metabaseId: arr[0], siteId: arr[1], skuId: arr[2], level1: arr[3], level2: arr[4], level3: arr[5], level4: arr[6], lastUpdated: Date.now()});
+            results.push({metabaseId: arr[0], siteId: arr[1], skuId: arr[2], level1: arr[3], level2: arr[4], level3: arr[5], level4: arr[6], isoCode: arr[7], lastUpdated: Date.now()});
         }
     })
     .on('end', () => {

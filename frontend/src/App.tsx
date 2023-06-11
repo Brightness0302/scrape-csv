@@ -1,11 +1,8 @@
-import React, { useState } from 'react';
+import React from 'react';
 import axios from 'axios';
 import './App.css';
-import { response } from 'express';
 
 function App() {
-  const [data, setData] = useState([]);
-
   const getAllRows = async () => {
     let count = 0;
     try {

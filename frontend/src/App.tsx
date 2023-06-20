@@ -5,10 +5,12 @@ import "./App.css";
 function App() {
     const [file1, setFile1] = useState("Choose File");
     const [progress1, setProgress1] = useState(0);
+    const [Totalprogress1, setTotalProgress1] = useState(0);
     const fileInputRef1 = useRef<HTMLInputElement>(null);
 
     const [file2, setFile2] = useState("Choose File");
     const [progress2, setProgress2] = useState(0);
+    const [Totalprogress2, setTotalProgress2] = useState(0);
     const fileInputRef2 = useRef<HTMLInputElement>(null);
     const getAllRows = async (type: string) => {
         let count = 0;
@@ -22,7 +24,10 @@ function App() {
                 const resRow = await axios.post(
                     `http://localhost:5000/getRow/${index}`
                 );
-                console.log(index);
+                const percentage = Math.round(((index + 1) / count) * 100);
+                if (type === "1") {
+                    setTotalProgress1(percentage);
+                }
             }
         } catch (err) {
             console.log(err);
@@ -81,6 +86,7 @@ function App() {
                     className="custom-file-upload"
                     onClick={() => {
                         setProgress1(0);
+                        setTotalProgress1(0);
                         if (fileInputRef1.current) {
                             fileInputRef1.current.value = "";
                         }
@@ -98,7 +104,20 @@ function App() {
                     }}
                     hidden
                 />
-                <progress value={progress1} max="100" />
+                <div className="ProgressBar">
+                    <p>Uploading</p>
+                    <div className="progress">
+                        <progress value={progress1} max="100" />
+                        <p>{progress1}%</p>
+                    </div>
+                </div>
+                <div className="ProgressBar">
+                    <p>Process:</p>
+                    <div className="progress">
+                        <progress value={Totalprogress1} max={"100"} />
+                        <p>{Totalprogress1}%</p>
+                    </div>
+                </div>
             </div>
             <div className="divider"></div>
             <div className="Row_Panel">
@@ -125,7 +144,20 @@ function App() {
                     }}
                     hidden
                 />
-                <progress value={progress2} max="100" />
+                <div className="ProgressBar">
+                    <p>Uploading</p>
+                    <div className="progress">
+                        <progress value={progress2} max="100" />
+                        <p>{progress2}%</p>
+                    </div>
+                </div>
+                <div className="ProgressBar">
+                    <p>Process:</p>
+                    <div className="progress">
+                        <progress value={Totalprogress2} max={"100"} />
+                        <p>{Totalprogress2}%</p>
+                    </div>
+                </div>
             </div>
         </div>
     );

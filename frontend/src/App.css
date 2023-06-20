@@ -59,3 +59,21 @@
   border-radius: 10px;
   font-weight: bold;
 }
+
+.ProgressBar {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+  justify-content: space-between;
+  width: 300px;
+  font-weight: bold;
+}
+
+.progress {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  width: 200px;
+}

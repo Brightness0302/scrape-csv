@@ -1,5 +1,8 @@
 .App {
   text-align: center;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-evenly;
 }
 
 .App-logo {
@@ -35,4 +38,24 @@
   to {
     transform: rotate(360deg);
   }
+}
+
+.Row_Panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.divider {
+  width: 5px;
+  height: 100vh;
+  background-color: black;
+}
+
+.custom-file-upload {
+  padding: 10px;
+  border: 1px solid black;
+  border-radius: 10px;
+  font-weight: bold;
 }

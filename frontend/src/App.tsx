@@ -18,6 +18,7 @@ function App() {
     const getAllRows = async (type: string) => {
         let count = 0;
         try {
+            console.log(1);
             const resCount = await axios.post(
                 "http://localhost:5000/getCount",
                 { type: type }
@@ -116,6 +117,7 @@ function App() {
                         type="file"
                         accept=".csv"
                         onChange={(e) => {
+                            console.log(1);
                             handleFileUpload(e, "1");
                         }}
                         hidden

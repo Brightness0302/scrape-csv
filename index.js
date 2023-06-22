@@ -84,11 +84,25 @@ const upload = multer({
     storage: storage,
 });
 
-async function sendRow(arr) {
+async function sendRow1(arr) {
     try {
         const res = await axios.post("https://reqres.in/api/users/", {
             ...arr,
         });
+        return res.data;
+    } catch (err) {
+        return null;
+    }
+}
+
+async function sendRow2(arr) {
+    try {
+        const res = await axios.post(
+            "https://jsonplaceholder.typicode.com/todos/",
+            {
+                ...arr,
+            }
+        );
         return res.data;
     } catch (err) {
         return null;
@@ -118,8 +132,8 @@ app.post("/getRow/:index", async (req, res) => {
     const { type } = req.body;
 
     let data;
-    if (type === "1") data = await sendRow(results1[index]);
-    if (type === "2") data = await sendRow(results2[index]);
+    if (type === "1") data = await sendRow1(results1[index]);
+    if (type === "2") data = await sendRow2(results2[index]);
     if (!res.headersSent) {
         res.json(data);
     }

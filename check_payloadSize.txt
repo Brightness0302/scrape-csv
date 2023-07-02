@@ -1,0 +1,17 @@
+async function checkPayloadSize() {
+    const data = {
+        // Your payload data here
+    };
+
+    const payloadSize = Buffer.byteLength(JSON.stringify(data));
+
+    console.log(`Payload size: ${payloadSize} bytes`);
+
+    // Make the API request
+    try {
+        const response = await axios.post("https://reqres.in/api/users/", data);
+        console.log(response.data);
+    } catch (error) {
+        console.error(error);
+    }
+}

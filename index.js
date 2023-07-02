@@ -1,3 +1,4 @@
+const http = require("http");
 const express = require("express");
 const cors = require("cors");
 const fs = require("fs");
@@ -15,7 +16,7 @@ const results1 = [];
 const results2 = [];
 let count = 0;
 
-const CSVTOJSON = (fileName, type) => {
+const CSVTOJSON1 = (fileName, type = 1) => {
     if (type === 1) {
         results1.splice(0, results1.length);
     }
@@ -48,11 +49,56 @@ const CSVTOJSON = (fileName, type) => {
                         metabaseId: arr[0],
                         siteId: arr[1],
                         skuId: arr[2],
+                        cost: arr[3],
+                        lastUpdated: Date.now(),
+                    });
+                }
+            }
+        })
+        .on("end", () => {
+            if (type === 1) {
+                console.log("1:", results1.length);
+            }
+            if (type === 2) {
+                console.log("2:", results2.length);
+            }
+        });
+};
+
+const CSVTOJSON2 = (fileName, type = 2) => {
+    if (type === 1) {
+        results1.splice(0, results1.length);
+    }
+    if (type === 2) {
+        results2.splice(0, results2.length);
+    }
+    fs.createReadStream(fileName)
+        .pipe(csv())
+        .on("data", (data) => {
+            var arr = [];
+            for (var x in data) {
+                arr.push(data[x]);
+            }
+            if (!arr.includes("")) {
+                if (type === 1) {
+                    results1.push({
+                        metabaseId: arr[0],
+                        siteId: arr[1],
+                        skuId: arr[2],
                         level1: arr[3],
                         level2: arr[4],
                         level3: arr[5],
                         level4: arr[6],
                         isoCode: arr[7],
+                        lastUpdated: Date.now(),
+                    });
+                }
+                if (type === 2) {
+                    results2.push({
+                        metabaseId: arr[0],
+                        siteId: arr[1],
+                        skuId: arr[2],
+                        cost: arr[3],
                         lastUpdated: Date.now(),
                     });
                 }
@@ -91,7 +137,7 @@ async function sendRow1(arr) {
         });
         return res.data;
     } catch (err) {
-        return null;
+        return err;
     }
 }
 
@@ -105,7 +151,7 @@ async function sendRow2(arr) {
         );
         return res.data;
     } catch (err) {
-        return null;
+        return err;
     }
 }
 
@@ -131,19 +177,46 @@ app.post("/getRow/:index", async (req, res) => {
     const index = req.params.index;
     const { type } = req.body;
 
-    let data;
-    if (type === "1") data = await sendRow1(results1[index]);
-    if (type === "2") data = await sendRow2(results2[index]);
+    let data = [];
+    let count = 0;
+    if (type === "1") {
+        const request_data = [];
+        let i;
+        for (i = index; i < results1.length; i++) {
+            request_data.push(results1[i]);
+            const payloadSize = Buffer.byteLength(JSON.stringify(request_data));
+            if (payloadSize > 51200) break;
+        }
+        count = i - index;
+        data = await sendRow1({ data: request_data });
+        if (data.response?.status && data.response?.status !== 200)
+            res.status(data.response?.status).send();
+    } else if (type === "2") {
+        const request_data = [];
+        let i;
+        for (i = index; i < results2.length; i++) {
+            request_data.push(results2[i]);
+            const payloadSize = Buffer.byteLength(JSON.stringify(request_data));
+            if (payloadSize > 51200) break;
+        }
+        count = i - index;
+        data = await sendRow2({ data: request_data });
+        if (data.response?.status && data.response?.status !== 200)
+            res.status(data.response?.status).send();
+    }
     if (!res.headersSent) {
-        res.json(data);
+        res.json({
+            result: data,
+            count: count,
+        });
     }
 });
 
 app.post("/upload", upload.single("file"), (req, res) => {
     const { type } = req.body;
     console.log("CSVTOJSON");
-    if (type === "1") CSVTOJSON(req.file.path, 1);
-    else if (type === "2") CSVTOJSON(req.file.path, 2);
+    if (type === "1") CSVTOJSON1(req.file.path);
+    else if (type === "2") CSVTOJSON2(req.file.path);
     res.send("File uploaded successfully");
 });
 

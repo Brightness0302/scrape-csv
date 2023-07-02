@@ -1,11 +1,13 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import { ToastContainer } from "react-toastify";
 import axios from "axios";
 import "./App.css";
-import { setAlert } from "./actions/alert";
-import "react-toastify/dist/ReactToastify.css";
+import { showToast } from "./actions/toast";
+import { showAlert } from "./actions/sweetalert";
 
 function App() {
+    const [loading, setLoading] = useState(false);
+
     const [file1, setFile1] = useState("Choose File");
     const [progress1, setProgress1] = useState(0);
     const [Totalprogress1, setTotalProgress1] = useState(0);
@@ -24,74 +26,106 @@ function App() {
                 { type: type }
             );
             count = resCount.data.length;
-            for (let index = 0; index < count; index++) {
+            let index;
+            for (index = 0; index < count; index++) {
                 const resRow = await axios.post(
                     `http://localhost:5000/getRow/${index}`,
                     { type: type }
                 );
                 if (resRow.status === 200) {
-                    const percentage = Math.round(((index + 1) / count) * 100);
+                    const percentage = Math.round(
+                        ((index + resRow.data.count) / count) * 100
+                    );
                     if (type === "1") {
                         setTotalProgress1(percentage);
-                        setAlert(`${index + 1} successful!`, `success`);
+                        showToast(
+                            `${index + 1} ~ ${
+                                index + resRow.data.count
+                            } successful!`,
+                            resRow.data !== null ? `success` : `warning`
+                        );
                     }
                     if (type === "2") {
                         setTotalProgress2(percentage);
-                        setAlert(`${index + 1} successful!`, `success`);
+                        showToast(
+                            `${index + 1} ~ ${
+                                index + resRow.data.count
+                            } successful!`,
+                            resRow.data !== null ? `success` : `warning`
+                        );
                     }
                 } else if (resRow.status === 500) {
-                    setAlert(`Server Failed`, `danger`);
+                    showToast(`Server Failed`, `danger`);
                 } else {
-                    setAlert(`${index + 1} failed!`, `warning`);
+                    showToast(`${index + 1} failed!`, `warning`);
                 }
+                index += resRow.data.count - 1;
             }
+            console.log(index);
+            if (index >= count) {
+                showAlert(`${count} Successfully`, "success");
+            } else {
+                showAlert(`${count} Failed`, "error");
+            }
+            setLoading(false);
         } catch (err) {
+            setLoading(false);
+            showAlert(`File Processing Failed`, "error");
             console.log(err);
         }
     };
 
-    const handleFileUpload = async (
-        event: React.ChangeEvent<HTMLInputElement>,
-        type: string
-    ) => {
-        console.log(type);
-        if (!event.target.files || event.target.files.length === 0) return;
-        const file = event.target.files[0];
-        const formData = new FormData();
-        formData.append("file", file);
-        formData.append("type", type);
+    const handleFileUpload = useCallback(
+        async (event: React.ChangeEvent<HTMLInputElement>, type: string) => {
+            console.log(type);
+            if (!event.target.files || event.target.files.length === 0) return;
+            const file = event.target.files[0];
+            const formData = new FormData();
+            formData.append("file", file);
+            formData.append("type", type);
 
-        if (type === "1") setFile1(file.name);
-        if (type === "2") setFile2(file.name);
+            if (type === "1") setFile1(file.name);
+            if (type === "2") setFile2(file.name);
 
-        const config = {
-            headers: {
-                "content-type": "multipart/form-data",
-            },
-            onUploadProgress: (progressEvent: any) => {
-                const percentage = Math.round(
-                    (progressEvent.loaded / progressEvent.total) * 100
+            const config = {
+                headers: {
+                    "content-type": "multipart/form-data",
+                },
+                onUploadProgress: (progressEvent: any) => {
+                    const percentage = Math.round(
+                        (progressEvent.loaded / progressEvent.total) * 100
+                    );
+                    if (type === "1" && percentage === 100)
+                        showToast(`Uploaded CSV successfully.`, `success`);
+                    if (type === "2" && percentage === 100)
+                        showToast(`Uploaded CSV successfully.`, `success`);
+                    if (type === "1") setProgress1(percentage);
+                    else if (type === "2") setProgress2(percentage);
+                },
+                onError: (error: any) => {
+                    showAlert(`Upload failed.`, "error");
+                    console.error("Upload failed:", error);
+                },
+            };
+
+            try {
+                const response = await axios.post(
+                    "http://localhost:5000/upload",
+                    formData,
+                    config
                 );
-                if (type === "1") setProgress1(percentage);
-                else if (type === "2") setProgress2(percentage);
-            },
-        };
-
-        try {
-            const response = await axios.post(
-                "http://localhost:5000/upload",
-                formData,
-                config
-            );
-            setTimeout(function () {
-                if (type === "1") getAllRows("1");
-                if (type === "2") getAllRows("2");
-            }, 2000);
-            console.log(response.data);
-        } catch (error) {
-            console.error(error);
-        }
-    };
+                setTimeout(function () {
+                    if (type === "1") getAllRows("1");
+                    if (type === "2") getAllRows("2");
+                }, 2000);
+                console.log(response.data);
+            } catch (error) {
+                setLoading(false);
+                console.error(error);
+            }
+        },
+        [loading]
+    );
 
     return (
         <>
@@ -117,7 +151,7 @@ function App() {
                         type="file"
                         accept=".csv"
                         onChange={(e) => {
-                            console.log(1);
+                            setLoading(true);
                             handleFileUpload(e, "1");
                         }}
                         hidden
@@ -159,6 +193,7 @@ function App() {
                         type="file"
                         accept=".csv"
                         onChange={(e) => {
+                            setLoading(true);
                             handleFileUpload(e, "2");
                         }}
                         hidden
@@ -180,6 +215,16 @@ function App() {
                 </div>
             </div>
             <ToastContainer />
+            {loading && (
+                <div className="loadingSpinnerContainer">
+                    <img
+                        src="/image/loading-forever.gif"
+                        className="loadingSpinner"
+                        alt="Loading..."
+                        draggable="false"
+                    />
+                </div>
+            )}
         </>
     );
 }

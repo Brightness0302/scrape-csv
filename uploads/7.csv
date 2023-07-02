@@ -1,9 +1,0 @@
-Product Sk,siteId,skuId,Dim Categories Fpna → Category Fpna L1 Name,Dim Categories Fpna → Category Fpna L2 Name,Dim Categories Fpna → Category Fpna L3 Name,Dim Categories Fpna → Category Fpna L4 Name,Dim Countries → Country Iso Code
-delivery-charges,,,Delivery charges,Unknown,Unknown,Unknown,
-hbi|eu|be|0,60,0,Misc,Misc,Sint/Christmas,Sint/Christmas,BE
-hbi|eu|be|1,60,1,Misc,Misc,Dumping / Gift Vouchers,Dumping / Gift Vouchers,BE
-hbi|eu|be|10,60,10,Misc,Misc,Non-Food Deletion,Non-Food Deletion,BE
-hbi|eu|be|100,60,100,Misc,Misc,Non-Food Deletion,Non-Food Deletion,BE
-hbi|eu|be|1000,60,1000,Food,Ambient Food,Teas - Green,Teas - Green,BE
-hbi|eu|be|10000,60,10000,VHMS,Supplements,Supplements - Lecithin,Supplements - Lecithin,BE
-hbi|eu|be|10001,hbi|eu|be|10001,10001,Food,Ambient Food,Teas - Herbal,Teas - Herbal,BE

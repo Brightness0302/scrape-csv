@@ -1,9 +1,17 @@
 import React, { useRef, useState, useCallback } from "react";
 import { ToastContainer } from "react-toastify";
-import axios from "axios";
+import api from "./utils/api";
+
 import "./App.css";
+
 import { showToast } from "./actions/toast";
 import { showAlert } from "./actions/sweetalert";
+
+interface ErrorResponse {
+    response: {
+        status: number;
+    };
+}
 
 function App() {
     const [loading, setLoading] = useState(false);
@@ -21,17 +29,13 @@ function App() {
         let count = 0;
         try {
             console.log(1);
-            const resCount = await axios.post(
-                "http://localhost:5000/getCount",
-                { type: type }
-            );
+            const resCount = await api.post("/getCount", { type: type });
             count = resCount.data.length;
             let index;
             for (index = 0; index < count; index++) {
-                const resRow = await axios.post(
-                    `http://localhost:5000/getRow/${index}`,
-                    { type: type }
-                );
+                const resRow = await api.post(`/getRow/${index}`, {
+                    type: type,
+                });
                 if (resRow.status === 200) {
                     const percentage = Math.round(
                         ((index + resRow.data.count) / count) * 100
@@ -95,10 +99,10 @@ function App() {
                     const percentage = Math.round(
                         (progressEvent.loaded / progressEvent.total) * 100
                     );
-                    if (type === "1" && percentage === 100)
-                        showToast(`Uploaded CSV successfully.`, `success`);
-                    if (type === "2" && percentage === 100)
-                        showToast(`Uploaded CSV successfully.`, `success`);
+                    // if (type === "1" && percentage === 100)
+                    //     showToast(`Uploaded CSV successfully.`, `success`);
+                    // if (type === "2" && percentage === 100)
+                    //     showToast(`Uploaded CSV successfully.`, `success`);
                     if (type === "1") setProgress1(percentage);
                     else if (type === "2") setProgress2(percentage);
                 },
@@ -109,19 +113,21 @@ function App() {
             };
 
             try {
-                const response = await axios.post(
-                    "http://localhost:5000/upload",
-                    formData,
-                    config
-                );
+                const response = await api.post("/upload", formData, config);
                 setTimeout(function () {
                     if (type === "1") getAllRows("1");
                     if (type === "2") getAllRows("2");
                 }, 2000);
+                if (response?.status === 200) {
+                    showToast(`Uploaded CSV successfully.`, `success`);
+                }
                 console.log(response.data);
             } catch (error) {
                 setLoading(false);
                 console.error(error);
+                if ((error as ErrorResponse)?.response?.status === 404) {
+                    showAlert(`Upload failed.`, "error");
+                }
             }
         },
         [loading]

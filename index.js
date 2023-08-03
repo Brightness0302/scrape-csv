@@ -66,6 +66,9 @@ const CSVTOJSON1 = (fileName, type = 1) => {
                     level3: arr[15],
                     level4: arr[16],
                     isoCode: isoCode,
+                    classification: arr[17],
+                    supplierId: arr[11],
+                    supplierName: arr[12],
                     lastUpdated: Date.now(),
                 });
             }
@@ -140,13 +143,13 @@ async function sendRow2(arr) {
     }
 }
 
-app.post("/getCount", async (req, res) => {
+app.post("/api/getCount", async (req, res) => {
     const { type } = req.body;
     if (type === "1") res.json({ length: results1.length });
     if (type === "2") res.json({ length: results2.length });
 });
 
-app.post("/getRow", async (req, res) => {
+app.post("/api/getRow", async (req, res) => {
     if (count >= results1.length) {
         res.status(404);
         return;
@@ -158,7 +161,7 @@ app.post("/getRow", async (req, res) => {
     count++;
 });
 
-app.post("/getRow/:index", async (req, res) => {
+app.post("/api/getRow/:index", async (req, res) => {
     const index = req.params.index;
     const { type } = req.body;
     const limit = 51200;
@@ -198,7 +201,7 @@ app.post("/getRow/:index", async (req, res) => {
     }
 });
 
-app.post("/upload", upload.single("file"), (req, res) => {
+app.post("/api/upload", upload.single("file"), (req, res) => {
     const { type } = req.body;
     console.log("CSVTOJSON");
     if (type === "1") CSVTOJSON1(req.file.path);

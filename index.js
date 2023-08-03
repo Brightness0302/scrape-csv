@@ -17,12 +17,7 @@ const results2 = [];
 let count = 0;
 
 const CSVTOJSON1 = (fileName, type = 1) => {
-    if (type === 1) {
-        results1.splice(0, results1.length);
-    }
-    if (type === 2) {
-        results2.splice(0, results2.length);
-    }
+    results1.splice(0, results1.length);
     fs.createReadStream(fileName)
         .pipe(csv())
         .on("data", (data) => {
@@ -31,47 +26,57 @@ const CSVTOJSON1 = (fileName, type = 1) => {
                 arr.push(data[x]);
             }
             if (!arr.includes("")) {
-                if (type === 1) {
-                    results1.push({
-                        metabaseId: arr[0],
-                        siteId: arr[1],
-                        skuId: arr[2],
-                        level1: arr[3],
-                        level2: arr[4],
-                        level3: arr[5],
-                        level4: arr[6],
-                        isoCode: arr[7],
-                        lastUpdated: Date.now(),
-                    });
+                let metabaseId;
+                let siteId;
+                let skuId = arr[2];
+                let isoCode;
+                switch (arr[1]) {
+                    case "United Kingdom":
+                        siteId = 10;
+                        isoCode = "GB";
+                        metabaseId = "UK";
+                        break;
+                    case "Belgium":
+                        siteId = 60;
+                        isoCode = "BE";
+                        metabaseId = "EU";
+                        break;
+                    case "Netherlands":
+                        siteId = 40;
+                        isoCode = "NL";
+                        metabaseId = "EU";
+                        break;
+                    case "Ireland":
+                        siteId = 30;
+                        isoCode = "IE";
+                        metabaseId = "EU";
+                        break;
+                    default:
+                        siteId = 10;
+                        isoCode = "GB";
+                        metabaseId = "UK";
                 }
-                if (type === 2) {
-                    results2.push({
-                        metabaseId: arr[0],
-                        siteId: arr[1],
-                        skuId: arr[2],
-                        cost: arr[3],
-                        lastUpdated: Date.now(),
-                    });
-                }
+                skuId = skuId.padStart(6, "0");
+                results1.push({
+                    metabaseId: `hbi|${metabaseId}|${isoCode}|${skuId}`,
+                    siteId: siteId,
+                    skuId: skuId,
+                    level1: arr[13],
+                    level2: arr[14],
+                    level3: arr[15],
+                    level4: arr[16],
+                    isoCode: isoCode,
+                    lastUpdated: Date.now(),
+                });
             }
         })
         .on("end", () => {
-            if (type === 1) {
-                console.log("1:", results1.length);
-            }
-            if (type === 2) {
-                console.log("2:", results2.length);
-            }
+            console.log("1:", results1.length);
         });
 };
 
 const CSVTOJSON2 = (fileName, type = 2) => {
-    if (type === 1) {
-        results1.splice(0, results1.length);
-    }
-    if (type === 2) {
-        results2.splice(0, results2.length);
-    }
+    results2.splice(0, results2.length);
     fs.createReadStream(fileName)
         .pipe(csv())
         .on("data", (data) => {
@@ -80,37 +85,17 @@ const CSVTOJSON2 = (fileName, type = 2) => {
                 arr.push(data[x]);
             }
             if (!arr.includes("")) {
-                if (type === 1) {
-                    results1.push({
-                        metabaseId: arr[0],
-                        siteId: arr[1],
-                        skuId: arr[2],
-                        level1: arr[3],
-                        level2: arr[4],
-                        level3: arr[5],
-                        level4: arr[6],
-                        isoCode: arr[7],
-                        lastUpdated: Date.now(),
-                    });
-                }
-                if (type === 2) {
-                    results2.push({
-                        metabaseId: arr[0],
-                        siteId: arr[1],
-                        skuId: arr[2],
-                        cost: arr[3],
-                        lastUpdated: Date.now(),
-                    });
-                }
+                results2.push({
+                    metabaseId: arr[0],
+                    siteId: arr[1],
+                    skuId: arr[2],
+                    cost: arr[3],
+                    lastUpdated: Date.now(),
+                });
             }
         })
         .on("end", () => {
-            if (type === 1) {
-                console.log("1:", results1.length);
-            }
-            if (type === 2) {
-                console.log("2:", results2.length);
-            }
+            console.log("2:", results2.length);
         });
 };
 
@@ -176,6 +161,7 @@ app.post("/getRow", async (req, res) => {
 app.post("/getRow/:index", async (req, res) => {
     const index = req.params.index;
     const { type } = req.body;
+    const limit = 51200;
 
     let data = [];
     let count = 0;
@@ -185,7 +171,7 @@ app.post("/getRow/:index", async (req, res) => {
         for (i = index; i < results1.length; i++) {
             request_data.push(results1[i]);
             const payloadSize = Buffer.byteLength(JSON.stringify(request_data));
-            if (payloadSize > 51200) break;
+            if (payloadSize > limit) break;
         }
         count = i - index;
         data = await sendRow1({ data: request_data });
@@ -197,7 +183,7 @@ app.post("/getRow/:index", async (req, res) => {
         for (i = index; i < results2.length; i++) {
             request_data.push(results2[i]);
             const payloadSize = Buffer.byteLength(JSON.stringify(request_data));
-            if (payloadSize > 51200) break;
+            if (payloadSize > limit) break;
         }
         count = i - index;
         data = await sendRow2({ data: request_data });

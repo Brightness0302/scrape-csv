@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, useCallback } from "react";
+import React, { useRef, useState, useCallback } from "react";
 import { ToastContainer } from "react-toastify";
 import axios from "axios";
 import "./App.css";

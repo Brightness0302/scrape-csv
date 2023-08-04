@@ -25,7 +25,8 @@ const CSVTOJSON1 = (fileName, type = 1) => {
             for (var x in data) {
                 arr.push(data[x]);
             }
-            if (!arr.includes("")) {
+            // if (!arr.includes("")) {
+            if (arr[1] !== "" && arr[2] !== "") {
                 let metabaseId;
                 let siteId;
                 let skuId = arr[2];

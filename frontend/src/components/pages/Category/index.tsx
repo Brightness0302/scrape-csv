@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from "react";
+import React, { useState, useRef, useCallback, useEffect } from "react";
 
 import api from "../../../utils/api";
 
@@ -17,7 +17,8 @@ interface ErrorResponse {
 }
 
 const index: React.FC<ICategoryProps> = ({ loading, setLoading }) => {
-    const [file, setFile] = useState("Choose File");
+    const [fileName, setFileName] = useState("Choose File");
+    const [uploadFile, setUploadFile] = useState<File>();
     const [progress, setProgress] = useState(0);
     const [Totalprogress, setTotalProgress] = useState(0);
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -54,13 +55,15 @@ const index: React.FC<ICategoryProps> = ({ loading, setLoading }) => {
             }
             console.log(index);
             if (index >= count) {
-                showAlert(`${count} Successfully`, "success");
+                await showAlert(`${count} Successfully`, "success");
             } else {
-                showAlert(`${count} Failed`, "error");
+                await showAlert(`${count} Failed`, "error");
             }
             setLoading(false);
+            setUploadFile(undefined);
         } catch (err) {
             setLoading(false);
+            setUploadFile(undefined);
             showAlert(`File Processing Failed`, "error");
             console.log(err);
         }
@@ -68,14 +71,24 @@ const index: React.FC<ICategoryProps> = ({ loading, setLoading }) => {
 
     const handleFileUpload = useCallback(
         async (event: React.ChangeEvent<HTMLInputElement>) => {
-            const type = "1";
             if (!event.target.files || event.target.files.length === 0) return;
             const file = event.target.files[0];
+            setUploadFile(file);
+            if (loading === false) {
+                setLoading(true);
+            }
+        },
+        [loading]
+    );
+
+    const fetchData = useCallback(async () => {
+        if (uploadFile) {
+            const type = "1";
             const formData = new FormData();
-            formData.append("file", file);
+            formData.append("file", uploadFile);
             formData.append("type", type);
 
-            setFile(file.name);
+            setFileName(uploadFile.name);
 
             const config = {
                 headers: {
@@ -104,14 +117,20 @@ const index: React.FC<ICategoryProps> = ({ loading, setLoading }) => {
                 console.log(response.data);
             } catch (error) {
                 setLoading(false);
+                setUploadFile(undefined);
                 console.error(error);
                 if ((error as ErrorResponse)?.response?.status === 404) {
                     showAlert(`Upload failed.`, "error");
                 }
             }
-        },
-        [loading]
-    );
+        }
+    }, [uploadFile]);
+
+    useEffect(() => {
+        console.log("upload", loading);
+        console.log("Category");
+        fetchData();
+    }, [loading]);
 
     return (
         <div className="Row_Panel">
@@ -127,7 +146,7 @@ const index: React.FC<ICategoryProps> = ({ loading, setLoading }) => {
                     }
                 }}
             >
-                {file}
+                {fileName}
             </label>
             <input
                 id="file-upload1"
@@ -135,7 +154,7 @@ const index: React.FC<ICategoryProps> = ({ loading, setLoading }) => {
                 type="file"
                 accept=".csv"
                 onChange={(e) => {
-                    setLoading(true);
+                    // setLoading(true);
                     handleFileUpload(e);
                 }}
                 hidden

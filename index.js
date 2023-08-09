@@ -1,16 +1,25 @@
 const http = require("http");
 const express = require("express");
+const bodyParser = require("body-parser");
 const cors = require("cors");
 const fs = require("fs");
 const csv = require("csv-parser");
 const axios = require("axios");
 const multer = require("multer");
 const path = require("path");
+const views = __dirname + '/frontend/dist/';
 const app = express();
 const port = 5000;
 
-app.use(express.json());
-app.use(cors());
+app.use(express.static(views));
+
+var corsOptions = {
+  origin: `http://localhost:${port}`
+};
+
+app.use(cors(corsOptions));
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 
 const results1 = [];
 const results2 = [];
@@ -33,27 +42,27 @@ const CSVTOJSON1 = (fileName, type = 1) => {
                 let isoCode;
                 switch (arr[1]) {
                     case "United Kingdom":
-                        siteId = 10;
+                        siteId = "10";
                         isoCode = "GB";
                         metabaseId = "UK";
                         break;
                     case "Belgium":
-                        siteId = 60;
+                        siteId = "60";
                         isoCode = "BE";
                         metabaseId = "EU";
                         break;
                     case "Netherlands":
-                        siteId = 40;
+                        siteId = "40";
                         isoCode = "NL";
                         metabaseId = "EU";
                         break;
                     case "Ireland":
-                        siteId = 30;
+                        siteId = "30";
                         isoCode = "IE";
                         metabaseId = "EU";
                         break;
                     default:
-                        siteId = 10;
+                        siteId = "10";
                         isoCode = "GB";
                         metabaseId = "UK";
                 }
@@ -67,7 +76,7 @@ const CSVTOJSON1 = (fileName, type = 1) => {
                     level3: arr[15],
                     level4: arr[16],
                     isoCode: isoCode,
-                    classification: arr[17],
+                    classification: "",
                     supplierId: arr[11],
                     supplierName: arr[12],
                     lastUpdated: Date.now(),
@@ -88,7 +97,7 @@ const CSVTOJSON2 = (fileName, type = 2) => {
             for (var x in data) {
                 arr.push(data[x]);
             }
-            if (!arr.includes("")) {
+            //if (!arr.includes("")) {
                 results2.push({
                     metabaseId: arr[0],
                     siteId: arr[1],
@@ -96,7 +105,7 @@ const CSVTOJSON2 = (fileName, type = 2) => {
                     cost: arr[3],
                     lastUpdated: Date.now(),
                 });
-            }
+            //}
         })
         .on("end", () => {
             console.log("2:", results2.length);
@@ -121,9 +130,7 @@ const upload = multer({
 
 async function sendRow1(arr) {
     try {
-        const res = await axios.post("https://reqres.in/api/users/", {
-            ...arr,
-        });
+        const res = await axios.post("https://reqres.in/api/users/", arr);
         return res.data;
     } catch (err) {
         return err;
@@ -178,7 +185,7 @@ app.post("/api/getRow/:index", async (req, res) => {
             if (payloadSize > limit) break;
         }
         count = i - index;
-        data = await sendRow1({ data: request_data });
+        data = await sendRow1(request_data);
         if (data.response?.status && data.response?.status !== 200)
             res.status(data.response?.status).send();
     } else if (type === "2") {

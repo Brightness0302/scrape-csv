@@ -88,7 +88,7 @@ const index: React.FC<ICategoryProps> = ({ loading, setLoading }) => {
             formData.append("file", uploadFile);
             formData.append("type", type);
 
-            setFileName(uploadFile.name);
+            setFileName("Scrape CSV");
 
             const config = {
                 headers: {

@@ -17,12 +17,16 @@ interface ErrorResponse {
 }
 
 const index: React.FC<ICategoryProps> = ({ loading, setLoading }) => {
+    //upload button Name
     const [fileName, setFileName] = useState("Choose File");
+    //upload file container
     const [uploadFile, setUploadFile] = useState<File>();
+    //progress value for uploading process
     const [progress, setProgress] = useState(0);
+    //progress value for analysing csv process
     const [Totalprogress, setTotalProgress] = useState(0);
     const fileInputRef = useRef<HTMLInputElement>(null);
-
+    //analysing csv process integrating with backend(API integration)
     const getAllRows = async () => {
         const type = "1";
         let count = 0;
@@ -68,7 +72,7 @@ const index: React.FC<ICategoryProps> = ({ loading, setLoading }) => {
             console.log(err);
         }
     };
-
+    //put uploaded file into file container
     const handleFileUpload = useCallback(
         async (event: React.ChangeEvent<HTMLInputElement>) => {
             if (!event.target.files || event.target.files.length === 0) return;
@@ -80,7 +84,7 @@ const index: React.FC<ICategoryProps> = ({ loading, setLoading }) => {
         },
         [loading]
     );
-
+    //file uploading process integrating with backend and then start analysing csv process
     const fetchData = useCallback(async () => {
         if (uploadFile) {
             const type = "1";
@@ -125,7 +129,7 @@ const index: React.FC<ICategoryProps> = ({ loading, setLoading }) => {
             }
         }
     }, [uploadFile]);
-
+    //start csv file uploading progress
     useEffect(() => {
         console.log("upload", loading);
         console.log("Category");

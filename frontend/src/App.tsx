@@ -1,4 +1,4 @@
-import {useState } from "react";
+import { useState } from "react";
 
 import { ToastContainer } from "react-toastify";
 import "./App.css";
@@ -8,6 +8,7 @@ import Cost from "./components/pages/Cost";
 import LoadingSpinnerContainer from "./components/LoadingSpinnerContainer";
 
 function App() {
+    //loading is status of progress, if loading is true, it means it is progressing now and if it is false, it means it had finished progressing.
     const [loading, setLoading] = useState(false);
 
     return (

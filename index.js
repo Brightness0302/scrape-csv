@@ -7,14 +7,14 @@ const csv = require("csv-parser");
 const axios = require("axios");
 const multer = require("multer");
 const path = require("path");
-const views = __dirname + '/frontend/dist/';
+const views = __dirname + "/frontend/dist/";
 const app = express();
 const port = 5000;
-
+//connecting frontend
 app.use(express.static(views));
 
 var corsOptions = {
-  origin: `http://localhost:${port}`
+    origin: `http://localhost:${port}`,
 };
 
 app.use(cors(corsOptions));
@@ -24,7 +24,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 const results1 = [];
 const results2 = [];
 let count = 0;
-
+//CSV file to JSON object for category export function
 const CSVTOJSON1 = (fileName, type = 1) => {
     results1.splice(0, results1.length);
     fs.createReadStream(fileName)
@@ -87,7 +87,7 @@ const CSVTOJSON1 = (fileName, type = 1) => {
             console.log("1:", results1.length);
         });
 };
-
+//csv file to JSON object for cost export function
 const CSVTOJSON2 = (fileName, type = 2) => {
     results2.splice(0, results2.length);
     fs.createReadStream(fileName)
@@ -98,20 +98,20 @@ const CSVTOJSON2 = (fileName, type = 2) => {
                 arr.push(data[x]);
             }
             //if (!arr.includes("")) {
-                results2.push({
-                    metabaseId: arr[0],
-                    siteId: arr[1],
-                    skuId: arr[2],
-                    cost: arr[3],
-                    lastUpdated: Date.now(),
-                });
+            results2.push({
+                metabaseId: arr[0],
+                siteId: arr[1],
+                skuId: arr[2],
+                cost: arr[3],
+                lastUpdated: Date.now(),
+            });
             //}
         })
         .on("end", () => {
             console.log("2:", results2.length);
         });
 };
-
+//uploading progress
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
         cb(null, "uploads/");
@@ -127,7 +127,7 @@ const storage = multer.diskStorage({
 const upload = multer({
     storage: storage,
 });
-
+//third-party api integration for category export function
 async function sendRow1(arr) {
     try {
         const res = await axios.post("https://reqres.in/api/users/", arr);
@@ -136,7 +136,7 @@ async function sendRow1(arr) {
         return err;
     }
 }
-
+//third-party api integration for cost export function
 async function sendRow2(arr) {
     try {
         const res = await axios.post(
@@ -150,7 +150,7 @@ async function sendRow2(arr) {
         return err;
     }
 }
-
+//API for getting length of csv
 app.post("/api/getCount", async (req, res) => {
     const { type } = req.body;
     if (type === "1") res.json({ length: results1.length });
@@ -168,7 +168,7 @@ app.post("/api/getRow", async (req, res) => {
     }
     count++;
 });
-
+//API for analysing csv integrating with third-party api
 app.post("/api/getRow/:index", async (req, res) => {
     const index = req.params.index;
     const { type } = req.body;
@@ -208,7 +208,7 @@ app.post("/api/getRow/:index", async (req, res) => {
         });
     }
 });
-
+//start uploading csv file process
 app.post("/api/upload", upload.single("file"), (req, res) => {
     const { type } = req.body;
     console.log("CSVTOJSON");

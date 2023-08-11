@@ -3,7 +3,7 @@ import axios from "axios";
 // Create an instance of axios
 const api = axios.create({
     // baseURL: "/api/v1/chatgpt",
-    baseURL: "http://192.168.146.46:5000/api",
+    baseURL: "/api",
     headers: {
         "Content-Type": "application/json",
     },

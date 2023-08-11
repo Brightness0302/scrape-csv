@@ -8,6 +8,8 @@ const { createProxy } = httpProxy;
 export default defineConfig({
     plugins: [react()],
     server: {
+        host: "0.0.0.0",
+        port: 3000, 
         proxy: {
             "/api": {
                 target: "http://192.168.145.62:5000",

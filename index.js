@@ -14,10 +14,10 @@ const port = 5000;
 app.use(express.static(views));
 
 var corsOptions = {
-    origin: `http://localhost:${port}`,
+    origin: `http://192.168.147.128:${port}`,
 };
 
-app.use(cors(corsOptions));
+app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
@@ -216,6 +216,14 @@ app.post("/api/upload", upload.single("file"), (req, res) => {
     else if (type === "2") CSVTOJSON2(req.file.path);
     res.send("File uploaded successfully");
 });
+
+app.get("/api/test", () => {
+    console.log("Backend is working now! test");
+})
+
+app.get("/test", () => {
+    console.log("Backend is working now! test1");
+})
 
 app.listen(port, () => {
     console.log(`Example app listening at http://localhost:${port}`);

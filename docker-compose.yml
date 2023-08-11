@@ -1,0 +1,32 @@
+version: '1.0'
+
+x-common-variables:
+
+services:
+  nginx:
+    depends_on:
+      - api
+      - client
+    restart: always
+    build:
+      dockerfile: Dockerfile
+      context: ./nginx
+    ports:
+      - "3050:80"
+  
+  api:
+    build: 
+      dockerfile: Dockerfile
+      context: "./"
+    volumes:
+      - /app/node_modules
+      - ./:/app
+  
+  client:
+    stdin_open: true
+    build: 
+      dockerfile: Dockerfile
+      context: ./frontend
+    volumes:
+      - /app/node_modules
+      - ./frontend:/app
